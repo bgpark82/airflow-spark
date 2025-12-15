@@ -80,6 +80,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/spark-jobs:/opt/spark-jobs
+    - ${AIRFLOW_PROJ_DIR:-.}/database:/opt/airflow/database
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -102,6 +103,11 @@ services:
     ports:
       - '8085:8080' # Master Web UI
       - '7077:7077' # Master 통신
+    volumes:
+      # Mount spark-jobs directory so Spark can access the PySpark scripts submitted by Airflow
+      - ${AIRFLOW_PROJ_DIR:-.}/spark-jobs:/opt/spark-jobs
+      # Mount database directory for input/output data files
+      - ${AIRFLOW_PROJ_DIR:-.}/database:/opt/airflow/database
 
   spark-worker:
     image: apache/spark:4.0.1  # Master와 동일한 버전 사용
@@ -117,6 +123,11 @@ services:
       - SPARK_WORKER_MEMORY=2g
     ports:
       - '8084:8081' # Worker Web UI (필요하다면)
+    volumes:
+      # Mount spark-jobs directory so Spark can access the PySpark scripts submitted by Airflow
+      - ${AIRFLOW_PROJ_DIR:-.}/spark-jobs:/opt/spark-jobs
+      # Mount database directory for input/output data files
+      - ${AIRFLOW_PROJ_DIR:-.}/database:/opt/airflow/database
 
   postgres:
     image: postgres:16
