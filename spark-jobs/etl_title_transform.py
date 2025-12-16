@@ -62,7 +62,8 @@ def extract_data(spark, input_path):
 
     try:
         # Read JSON file into DataFrame
-        df = spark.read.json(input_path)
+        # Cache is required for Spark 3.4+ to perform operations on raw JSON files
+        df = spark.read.json(input_path).cache()
 
         # Validate data
         row_count = df.count()
